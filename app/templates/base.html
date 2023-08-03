@@ -1,0 +1,51 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <!-- Include Bootstrap CSS here -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/bootstrap.min.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <!-- Brand Logo -->
+            <a class="navbar-brand" href="#">Arele Inventory System</a>
+
+            <!-- Navbar Collapse Button (For mobile responsiveness) -->
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navbar Links -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <!-- Add more navigation links here -->
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content block that will be replaced in child templates -->
+    <div class="container p-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        <!-- Your footer here -->
+    </footer>
+
+    <!-- Include Bootstrap JS here -->
+    <script src="{{ url_for('static', filename='bootstrap/bootstrap.min.js') }}"></script>
+    
+    <!-- Include jQuery library from a CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="text-center mb-3">Product Movement Report</h1>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>From Warehouse</th>
+                <th>To Warehouse</th>
+                <th>Qty Moved</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movement in product_movements %}
+                <tr>
+                    <td>{{ movement.product.product_name }}</td>
+                    <td>{{ movement.from_location.location_name }}</td>
+                    <td>{{ movement.to_location.location_name }}</td>
+                    <td>{{ movement.quantity }}</td>
+                    <td>{{ movement.time_stamp }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('app.generate_csv_movement_report') }}" class="btn btn-primary">Download CSV</a>
+{% endblock %}

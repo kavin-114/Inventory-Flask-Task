@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1 class="text-center mb-3">Product Balance Report</h1>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Warehouse</th>
+                <th>Qty</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product, warehouse, qty in product_locations %}
+                <tr>
+                    <td>{{ product }}</td>
+                    <td>{{ warehouse }}</td>
+                    <td>{{ qty }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('app.generate_csv_report') }}" class="btn btn-primary">Download CSV</a>
+{% endblock %}

@@ -1,0 +1,249 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Product Page{% endblock %}
+{% block content %}
+<h1 class="text-center mb-3">Product Inventory - <span id=location-val>{{location_name}}</span></h1>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Product Quantity</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for product in products %}
+        <tr>
+            <td contenteditable="false" class="editable" data-field="product_name" data-id="{{ product.location_id }}">{{
+                product.product_name }}</td>
+            <td contenteditable="false" class="editable" data-field="quantity" data-id="{{ product.location_id }}">{{
+                product.quantity }}</td>
+            <td>
+                <button class="btn btn-primary btn-edit" data-id="{{ product.location_id }}">Edit</button>
+                <button class="btn btn-success btn-save" data-id="{{ product.location_id }}"
+                    style="display: none;">Save</button>
+                <button class="btn btn-info btn-move" data-id="{{ product.product_id }}"
+                    data-location="{{ product.location_name }}" data-quantity="{{ product.quantity }}">Move</button>
+                <input type="hidden" class="product-quantity" value="{{ product.quantity }}">
+                <input type="hidden" id="product-id" value="{{ product.product_id }}">            
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<button class="btn btn-primary btn-add" data-location="{{location_name}}">Add New</button>
+
+<!-- Modal for move product -->
+<div class="modal fade" id="moveProductModal" tabindex="-1" aria-labelledby="moveProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="moveProductModalLabel">Move Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="target-location" class="form-label">Select Target Location:</label>
+                    <select class="form-select" id="target-location">
+                        {% for location in location_names if not location == location_name %}
+                        <option value="{{ location }}">{{ location }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="quantity" class="form-label">Available Quantity: <span id="available-quantity"></span></label>
+                    <input type="number" class="form-control" id="quantity" min="1" max="{{ currentQuantity }}"
+                        placeholder="Enter quantity">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmMove">Move</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function () {
+        // Handle Edit button click
+        $('.btn-edit').on('click', function () {
+            var button = $(this);
+            var productId = button.data('id');
+
+            var row = button.closest('tr');
+
+            // Switch the cells to edit mode
+            row.find('[data-field="product_name"]').attr('contenteditable', true).focus();
+            row.find('[data-field="quantity"]').attr('contenteditable', true).focus();
+
+            // Hide the Edit button and show the Save button
+            button.hide();
+            row.find('.btn-save').show();
+        });
+
+        // Handle Save button click
+        $('.btn-save').on('click', function () {
+            var button = $(this);
+            var productId = button.data('id');
+            var row = button.closest('tr');
+
+            // Get the updated data from the editable cells
+            var productName = row.find('[data-field="product_name"]').text();
+            var quantity = row.find('[data-field="quantity"]').text();
+
+            // Make an AJAX request to update the data
+            $.ajax({
+                url: '/update_product/',
+                type: 'PUT',
+                data: {
+                    id: productId,
+                    product_name: productName,
+                    quantity: quantity
+                },
+                success: function (response) {
+                    // Update the table cell with the new data
+                    row.find('[data-field="product_name"]').text(response.product_name);
+                    row.find('[data-field="quantity"]').text(response.quantity);
+
+                    // Switch the cells back to non-edit mode
+                    row.find('[data-field="product_name"]').attr('contenteditable', false);
+                    row.find('[data-field="quantity"]').attr('contenteditable', false);
+
+                    // Show the Edit button and hide the Save button
+                    row.find('.btn-edit').show();
+                    button.hide();
+
+                    console.log("Updated");
+                    alert("Product updated successfully");
+                },
+                error: function (error) {
+                    console.log('Error:', error);
+                }
+            });
+
+        });
+        // Handle Add New button click
+        $('.btn-add').on('click', function () {
+            // Create a new row and append it to the table body
+            var newRow = $('<tr>');
+            newRow.append('<td contenteditable="true" class="editable" data-field="product_name"></td>');
+            newRow.append('<td contenteditable="true" class="editable" data-field="quantity"></td>');
+            newRow.append('<td><button class="btn btn-success btn-save-new">Save</button></td>');
+            newRow.appendTo('.table tbody');
+
+            // Switch the new cells to edit mode
+            newRow.find('[data-field="product_name"]').attr('contenteditable', true).focus();
+            newRow.find('[data-field="quantity"]').attr('contenteditable', true).focus();
+
+            // Hide the "Add New" button
+            $(this).hide();
+
+            // Show the "Save" button for the new row
+            newRow.find('.btn-save-new').show();
+        });
+
+        // Handle Save New button click
+        $(document).on('click', '.btn-save-new', function () {
+            var button = $(this);
+            var row = button.closest('tr');
+            var locationName = $('#location-val').text().trim();
+            console.log(locationName);
+            var location = locationName;
+
+            // Get the data from the new row
+            var productName = row.find('[data-field="product_name"]').text();
+            var quantity = row.find('[data-field="quantity"]').text();
+
+            // Make an AJAX request to insert the data into the database
+            $.ajax({
+                url: '/add_product/',
+                type: 'POST',
+                data: {
+                    location: location,
+                    product_name: productName,
+                    quantity: quantity
+                },
+                success: function (response) {
+                    // Update the table cell with the new data
+                    row.find('[data-field="product_name"]').text(response.product_name);
+                    row.find('[data-field="quantity"]').text(response.quantity);
+
+                    // Switch the cells back to non-edit mode
+                    row.find('[data-field="product_name"]').attr('contenteditable', false);
+                    row.find('[data-field="quantity"]').attr('contenteditable', false);
+
+                    // Show the "Add New" button
+                    $('.btn-add').show();
+
+                    console.log("Added");
+                    alert("Product added successfully");
+                    location.reload();
+                },
+                error: function (error) {
+                    console.log('Error:', error);
+                }
+            });
+        });
+
+        // Handle Move button click
+        $('.btn-move').on('click', function () {
+            var button = $(this);
+            var currentLocation = button.data('location');
+            var currentQuantity = button.data('quantity');
+
+            // Show the moveProductModal and populate available quantity
+            $('#available-quantity').text(currentQuantity); // Set available quantity in the modal
+            $('#quantity').val(''); // Reset the quantity input
+            $('#moveProductModal').modal('show');
+
+            // Click event for the "Move" button inside the modal
+            $('#confirmMove').on('click', function () {
+                var productId = parseInt($('#product-id').val());
+                var quantityToMove = parseInt($('#quantity').val());
+                var targetLocation = $('#target-location').val();
+                console.log(productId);
+
+                if (isNaN(quantityToMove) || quantityToMove <= 0 || quantityToMove > currentQuantity) {
+                    alert('Invalid quantity. Please enter a valid quantity.');
+                    return;
+                }
+
+                // Make an AJAX request to move the product
+                $.ajax({
+                    url: '/move_product/',
+                    type: 'POST',
+                    data: {
+                        product_id: productId,
+                        from_location: currentLocation,
+                        to_location: targetLocation,
+                        quantity: quantityToMove
+                    },
+                    success: function (response) {
+                        // Update the quantity in the current row
+                        button.data('quantity', currentQuantity - quantityToMove);
+                        button.attr('data-quantity', currentQuantity - quantityToMove);
+
+                        // Show the updated quantity in the row
+                        button.closest('tr').find('.editable[data-field="quantity"]').text(currentQuantity - quantityToMove);
+
+                        alert(`Successfully moved ${quantityToMove} items from ${currentLocation} to ${response.to_location}.`);
+                        window.location.reload()
+                    },
+                    error: function (error) {
+                        console.log('Error:', error);
+                        alert('Failed to move the product. Please try again later.');
+                    }
+                });
+
+                // Close the modal after moving the product
+                $('#moveProductModal').modal('hide');
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,51 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+   <!-- templates/home.html -->
+<div class="container">
+    <h1 class="text-center mb-3">Warehouse Locations</h1>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <img src="{{url_for('static', filename='assets/img-1.jpg')}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">Coimbatore</h5>
+                    <p class="card-text">Location: Coimbatore</p>
+                    <a href="{{ url_for('app.product', location='coimbatore') }}" class="btn btn-primary">Enter Warehouse</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <img src="{{url_for('static', filename='assets/img-2.jpg')}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">Chennai</h5>
+                    <p class="card-text">Location: Chennai</p>
+                    <a href="{{ url_for('app.product', location='chennai') }}" class="btn btn-primary">Enter Warehouse</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <img src="{{url_for('static', filename='assets/img-3.jpg')}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">Bangalore</h5>
+                    <p class="card-text">Location: Bangalore</p>
+                    <a href="{{ url_for('app.product', location='bangalore') }}" class="btn btn-primary">Enter Warehouse</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="w-100 d-flex justify-content-center">
+        <a href="{{ url_for('app.product_balance_report')}}" class="btn btn-success m-3">Generate Report</a>
+        <a href="{{ url_for('app.product_movement_details')}}" class="btn btn-primary m-3">Movement Details</a>
+    </div>
+</div>
+
+{% endblock %}
